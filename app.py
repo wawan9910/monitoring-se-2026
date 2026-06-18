@@ -30,10 +30,13 @@ class BlokSensus(db.Model):
     rt = db.Column(db.Integer, default=0)
     pcl = db.Column(db.String(200))
     pml = db.Column(db.String(200))
-    status = db.Column(db.String(50), default='Reject')
+    status = db.Column(db.String(50), default='Belum Cacah')
     catatan = db.Column(db.Text, default='')
+    jml_submit = db.Column(db.Integer, default=0)
+    jml_cacah = db.Column(db.Integer, default=0)
+    jml_belum = db.Column(db.Integer, default=0)
 
-    STATUS_OPTIONS = ['Sudah Submit', 'Sudah Cacah Belum Submit', 'Reject', 'Tidak Ada RT']
+    STATUS_OPTIONS = ['Sudah Submit', 'Sudah Cacah Belum Submit', 'On Progress', 'Belum Cacah', 'Tidak Ada RT']
 
     def to_dict(self):
         return {
@@ -47,6 +50,9 @@ class BlokSensus(db.Model):
             'pml': self.pml,
             'status': self.status,
             'catatan': self.catatan,
+            'jml_submit': self.jml_submit or 0,
+            'jml_cacah': self.jml_cacah or 0,
+            'jml_belum': self.jml_belum or 0,
         }
 
 
@@ -200,6 +206,12 @@ def update_record():
         bs.pml = data['pml']
     if 'rt' in data:
         bs.rt = int(data['rt'])
+    if 'jml_submit' in data:
+        bs.jml_submit = int(data['jml_submit'] or 0)
+    if 'jml_cacah' in data:
+        bs.jml_cacah = int(data['jml_cacah'] or 0)
+    if 'jml_belum' in data:
+        bs.jml_belum = int(data['jml_belum'] or 0)
 
     db.session.commit()
     return jsonify({'ok': True, 'record': bs.to_dict()})

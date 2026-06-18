@@ -84,6 +84,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
 .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; }
 .bs { background:#d1fae5; color:#065f46; }
 .bc { background:#fef3c7; color:#92400e; }
+.bop { background:#dbeafe; color:#1d4ed8; }
 .bb { background:#fee2e2; color:#991b1b; }
 .bn { background:#ede9fe; color:#5b21b6; }
 
@@ -158,7 +159,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
       <option value="">Semua Status</option>
       <option>Sudah Submit</option>
       <option>Sudah Cacah Belum Submit</option>
-      <option>Reject</option>
+      <option>Belum Cacah</option>
       <option>Tidak Ada RT</option>
     </select>
     <input id="fQ" type="text" placeholder="🔍 Cari PCL / desa..." oninput="debounce(loadTable,400)()">
@@ -172,7 +173,8 @@ td.bold { font-weight:600; color:#1a1a2e; }
     <span style="font-size:13px;color:#374151;">Ubah status menjadi:</span>
     <button class="btn btn-green" onclick="bulkUpdate('Sudah Submit')">✅ Sudah Submit</button>
     <button class="btn btn-yellow" onclick="bulkUpdate('Sudah Cacah Belum Submit')">📝 Sudah Cacah Belum Submit</button>
-    <button class="btn btn-red" onclick="bulkUpdate('Reject')">⏰ Reject</button>
+    <button class="btn btn-primary" onclick="bulkUpdate('On Progress')" style="background:#3b82f6">🔄 On Progress</button>
+    <button class="btn btn-red" onclick="bulkUpdate('Belum Cacah')">⏰ Belum Cacah</button>
     <button class="btn btn-outline" onclick="clearSelection()">✕ Batal</button>
   </div>
 
@@ -219,11 +221,24 @@ td.bold { font-weight:600; color:#1a1a2e; }
       <input id="mRt" type="number" min="0">
     </div>
     <div class="modal-row">
-      <label>Status</label>
+      <label style="color:#10b981;font-weight:700">✅ Jumlah yang Sudah Submit</label>
+      <input id="mJmlSubmit" type="number" min="0" style="border-color:#10b981">
+    </div>
+    <div class="modal-row">
+      <label style="color:#f59e0b;font-weight:700">📝 Jumlah yang Sudah Cacah, Belum Submit</label>
+      <input id="mJmlCacah" type="number" min="0" style="border-color:#f59e0b">
+    </div>
+    <div class="modal-row">
+      <label style="color:#ef4444;font-weight:700">⏰ Jumlah yang Belum Cacah</label>
+      <input id="mJmlBelum" type="number" min="0" style="border-color:#ef4444">
+    </div>
+    <div class="modal-row">
+      <label>Status Keseluruhan</label>
       <select id="mStatus">
         <option>Sudah Submit</option>
         <option>Sudah Cacah Belum Submit</option>
-        <option>Reject</option>
+        <option>On Progress</option>
+        <option>Belum Cacah</option>
         <option>Tidak Ada RT</option>
       </select>
     </div>
@@ -242,8 +257,8 @@ td.bold { font-weight:600; color:#1a1a2e; }
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-const BADGE = {'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','Reject':'bb','Tidak Ada RT':'bn'};
-const COLORS_DOT = {'Sudah Submit':'#10b981','Sudah Cacah Belum Submit':'#f59e0b','Reject':'#ef4444','Tidak Ada RT':'#8b5cf6'};
+const BADGE = {'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','On Progress':'bop','Belum Cacah':'bb','Tidak Ada RT':'bn'};
+const COLORS_DOT = {'Sudah Submit':'#10b981','Sudah Cacah Belum Submit':'#f59e0b','On Progress':'#3b82f6','Belum Cacah':'#ef4444','Tidak Ada RT':'#8b5cf6'};
 
 let allData = [], selectedIds = new Set();
 let currentPage = 1;
@@ -255,11 +270,11 @@ async function fetchJSON(url){ const r=await fetch(url); return r.json(); }
 async function loadStats(){
   const s = await fetchJSON('/api/summary');
   const total = Object.values(s).reduce((a,b)=>a+b,0);
-  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['Reject']||0);
+  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['Belum Cacah']||0);
   const labels = [
     {k:'Sudah Submit',lbl:'Sudah Submit'},
     {k:'Sudah Cacah Belum Submit',lbl:'Cacah, Belum Submit'},
-    {k:'Reject',lbl:'Reject'},
+    {k:'Belum Cacah',lbl:'Belum Cacah'},
     {k:'Tidak Ada RT',lbl:'Tidak Ada RT'},
   ];
   document.getElementById('statsBar').innerHTML = labels.map(({k,lbl})=>`
@@ -314,7 +329,7 @@ function renderTable(){
       <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.pcl}">${d.pcl}</td>
       <td>
         <select class="status-sel" data-id="${d.id}" onchange="quickStatus(this)">
-          ${['Sudah Submit','Sudah Cacah Belum Submit','Reject','Tidak Ada RT'].map(s=>`<option${s===d.status?' selected':''}>${s}</option>`).join('')}
+          ${['Sudah Submit','Sudah Cacah Belum Submit','On Progress','Belum Cacah','Tidak Ada RT'].map(s=>`<option${s===d.status?' selected':''}>${s}</option>`).join('')}
         </select>
       </td>
       <td><input class="note-inp" value="${escHtml(d.catatan||'')}" data-id="${d.id}" onblur="saveNote(this)" placeholder="catatan..."></td>
@@ -377,6 +392,9 @@ function openModal(id){
   document.getElementById('mPcl').value=d.pcl;
   document.getElementById('mPml').value=d.pml;
   document.getElementById('mRt').value=d.rt;
+  document.getElementById('mJmlSubmit').value=d.jml_submit||0;
+  document.getElementById('mJmlCacah').value=d.jml_cacah||0;
+  document.getElementById('mJmlBelum').value=d.jml_belum||0;
   document.getElementById('mStatus').value=d.status;
   document.getElementById('mNote').value=d.catatan||'';
   document.getElementById('modalOverlay').classList.add('show');
@@ -385,7 +403,7 @@ function closeModal(e){ if(e.target===document.getElementById('modalOverlay')) d
 
 async function saveModal(){
   const id=parseInt(document.getElementById('mId').value);
-  const data={id,pcl:document.getElementById('mPcl').value,pml:document.getElementById('mPml').value,rt:document.getElementById('mRt').value,status:document.getElementById('mStatus').value,catatan:document.getElementById('mNote').value};
+  const data={id,pcl:document.getElementById('mPcl').value,pml:document.getElementById('mPml').value,rt:document.getElementById('mRt').value,jml_submit:document.getElementById('mJmlSubmit').value,jml_cacah:document.getElementById('mJmlCacah').value,jml_belum:document.getElementById('mJmlBelum').value,status:document.getElementById('mStatus').value,catatan:document.getElementById('mNote').value};
   const r=await fetch('/admin/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
   if(r.ok){ toast('✅ Record disimpan!','ok'); document.getElementById('modalOverlay').classList.remove('show'); await loadTable(); loadStats(); }
   else { toast('❌ Gagal menyimpan','err'); }

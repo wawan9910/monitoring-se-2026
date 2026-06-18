@@ -115,6 +115,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
 .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; }
 .bs { background:#d1fae5; color:#065f46; }
 .bc { background:#fef3c7; color:#92400e; }
+.bop { background:#dbeafe; color:#1d4ed8; }
 .bb { background:#fee2e2; color:#991b1b; }
 .bn { background:#ede9fe; color:#5b21b6; }
 
@@ -191,6 +192,40 @@ td.bold { font-weight:600; color:#1a1a2e; }
   .cards{grid-template-columns:1fr;}
   header{flex-direction:column;gap:10px;}
 }
+
+/* LOGIN MODAL */
+.modal-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);
+  z-index:1000; align-items:center; justify-content:center;
+}
+.modal-box {
+  background:white; border-radius:18px; padding:36px 32px; width:100%;
+  max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.4); position:relative;
+}
+.modal-box h2 { font-size:20px; color:#1a1a2e; font-weight:800; margin-bottom:4px; }
+.modal-box p { font-size:12px; color:#9ca3af; margin-bottom:22px; }
+.modal-box label { font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:6px; }
+.modal-box input[type=password] {
+  width:100%; padding:11px 14px; border:1.5px solid #e5e7eb;
+  border-radius:10px; font-size:14px; outline:none;
+  transition:border-color .2s; margin-bottom:16px;
+}
+.modal-box input[type=password]:focus { border-color:#0f3460; }
+.modal-submit {
+  width:100%; padding:11px; background:linear-gradient(135deg,#0f3460,#1a1a2e);
+  color:white; border:none; border-radius:10px; font-size:15px; font-weight:700;
+  cursor:pointer; transition:opacity .2s;
+}
+.modal-submit:hover { opacity:.88; }
+.modal-close {
+  position:absolute; top:14px; right:16px; background:none; border:none;
+  font-size:20px; cursor:pointer; color:#9ca3af; line-height:1;
+}
+.modal-close:hover { color:#1a1a2e; }
+.modal-error {
+  background:#fee2e2; color:#991b1b; border-radius:8px;
+  padding:9px 13px; font-size:13px; margin-bottom:14px; display:none;
+}
 </style>
 </head>
 <body>
@@ -205,12 +240,25 @@ td.bold { font-weight:600; color:#1a1a2e; }
       <div class="time" id="live-time">--:--:--</div>
       <div class="date" id="live-date">---</div>
     </div>
-    <a href="/admin/login" class="btn-admin">⚙️ Login Admin</a>
+    <button class="btn-admin" onclick="document.getElementById('loginModal').style.display='flex'">⚙️ Login Admin</button>
     <button class="btn-refresh" onclick="refreshAll(this)">
       <span class="ico">🔄</span> Perbarui Data
     </button>
   </div>
 </header>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('loginModal').style.display='none'">✕</button>
+    <h2>📊 Login Admin</h2>
+    <p>Masukkan password untuk mengakses panel admin</p>
+    <div class="modal-error" id="loginError"></div>
+    <label>Password</label>
+    <input type="password" id="modalPassword" placeholder="Masukkan password..." onkeydown="if(event.key==='Enter')submitLogin()">
+    <button class="modal-submit" onclick="submitLogin()">Masuk →</button>
+  </div>
+</div>
 
 <div class="main">
 
@@ -230,7 +278,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
     <div class="card c-red">
       <div class="card-ico">⏰</div>
       <div class="card-val" id="cnt-b">—</div>
-      <div class="card-lbl">Reject</div>
+      <div class="card-lbl">Belum Cacah</div>
       <div class="card-sub" id="pct-b"></div>
     </div>
     <div class="card c-purple">
@@ -291,7 +339,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
           <div class="pcl-stat pcl-stat-blue"><div class="pcl-stat-val" id="ps-total">—</div><div class="pcl-stat-lbl">Total BS</div></div>
           <div class="pcl-stat pcl-stat-green"><div class="pcl-stat-val" id="ps-s">—</div><div class="pcl-stat-lbl">Sudah Submit</div></div>
           <div class="pcl-stat pcl-stat-yellow"><div class="pcl-stat-val" id="ps-c">—</div><div class="pcl-stat-lbl">Cacah, Blm Submit</div></div>
-          <div class="pcl-stat pcl-stat-red"><div class="pcl-stat-val" id="ps-b">—</div><div class="pcl-stat-lbl">Reject</div></div>
+          <div class="pcl-stat pcl-stat-red"><div class="pcl-stat-val" id="ps-b">—</div><div class="pcl-stat-lbl">Belum Cacah</div></div>
         </div>
         <div class="pcl-charts-row">
           <div class="ch ch-pcl-donut"><canvas id="cPclDonut"></canvas></div>
@@ -317,13 +365,6 @@ td.bold { font-weight:600; color:#1a1a2e; }
     <div class="filters">
       <select id="fKec" onchange="onKecChange()"><option value="">Semua Kecamatan</option></select>
       <select id="fDesa" onchange="loadTable()"><option value="">Semua Desa</option></select>
-      <select id="fStatus" onchange="loadTable()">
-        <option value="">Semua Status</option>
-        <option>Sudah Submit</option>
-        <option>Sudah Cacah Belum Submit</option>
-        <option>Reject</option>
-        <option>Tidak Ada RT</option>
-      </select>
       <input id="fQ" type="text" placeholder="🔍 Cari PCL / desa..." oninput="debounce(loadTable,400)()">
     </div>
   </div>
@@ -348,7 +389,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
       <div class="ds-dot" style="background:#ef4444"></div>
       <div>
         <div class="ds-val" id="ds-b">—</div>
-        <div class="ds-lbl">Reject</div>
+        <div class="ds-lbl">Belum Cacah</div>
       </div>
     </div>
     <div class="ds-pill ds-total">
@@ -379,10 +420,10 @@ td.bold { font-weight:600; color:#1a1a2e; }
 <script>
 const COLORS = {
   'Sudah Submit':'#10b981','Sudah Cacah Belum Submit':'#f59e0b',
-  'Reject':'#ef4444','Tidak Ada RT':'#8b5cf6'
+  'On Progress':'#3b82f6','Belum Cacah':'#ef4444','Tidak Ada RT':'#8b5cf6'
 };
 const BADGE = {
-  'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','Reject':'bb','Tidak Ada RT':'bn'
+  'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','On Progress':'bop','Belum Cacah':'bb','Tidak Ada RT':'bn'
 };
 
 let charts = {};
@@ -408,15 +449,15 @@ async function fetchJSON(url){ const r=await fetch(url); return r.json(); }
 
 async function loadSummary(){
   const s = await fetchJSON('/api/summary');
-  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['Reject']||0);
+  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['On Progress']||0)+(s['Belum Cacah']||0);
   document.getElementById('cnt-s').textContent = s['Sudah Submit']||0;
   document.getElementById('cnt-c').textContent = s['Sudah Cacah Belum Submit']||0;
-  document.getElementById('cnt-b').textContent = s['Reject']||0;
+  document.getElementById('cnt-b').textContent = s['Belum Cacah']||0;
   document.getElementById('cnt-n').textContent = s['Tidak Ada RT']||0;
   const pct = v => active>0?Math.round((v||0)/active*100)+'% dari BS aktif':'';
   document.getElementById('pct-s').textContent = pct(s['Sudah Submit']);
   document.getElementById('pct-c').textContent = pct(s['Sudah Cacah Belum Submit']);
-  document.getElementById('pct-b').textContent = pct(s['Reject']);
+  document.getElementById('pct-b').textContent = pct(s['Belum Cacah']);
   return s;
 }
 
@@ -449,7 +490,7 @@ async function loadCharts(){
   });
 
   const kecList = Object.keys(chartData).sort();
-  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','Reject','Tidak Ada RT'];
+  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','On Progress','Belum Cacah','Tidak Ada RT'];
 
   // STACKED BAR
   destroyChart('cBar');
@@ -477,7 +518,7 @@ async function loadCharts(){
   // HORIZONTAL BAR %
   const pctArr = kecList.map(k=>{
     const d=chartData[k]||{};
-    const tot=(d['Sudah Submit']?.count||0)+(d['Sudah Cacah Belum Submit']?.count||0)+(d['Reject']?.count||0);
+    const tot=(d['Sudah Submit']?.count||0)+(d['Sudah Cacah Belum Submit']?.count||0)+(d['On Progress']?.count||0)+(d['Belum Cacah']?.count||0);
     return tot>0?Math.round((d['Sudah Submit']?.count||0)/tot*100):0;
   });
   const sortedIdx=[...Array(kecList.length).keys()].sort((a,b)=>pctArr[b]-pctArr[a]);
@@ -506,7 +547,7 @@ async function loadCharts(){
   });
 
   // RT CHART
-  const rtStat = ['Sudah Submit','Sudah Cacah Belum Submit','Reject'];
+  const rtStat = ['Sudah Submit','Sudah Cacah Belum Submit','On Progress','Belum Cacah'];
   destroyChart('cRt');
   const rtCtx = document.getElementById('cRt').getContext('2d');
   charts['cRt'] = new Chart(rtCtx, {
@@ -555,9 +596,8 @@ async function loadTable(){
   currentPage = 1;
   const kec = document.getElementById('fKec').value;
   const desa = document.getElementById('fDesa').value;
-  const status = document.getElementById('fStatus').value;
   const q = document.getElementById('fQ').value;
-  const params = new URLSearchParams({kec,desa,status,q});
+  const params = new URLSearchParams({kec,desa,q});
   allData = await fetchJSON('/api/data?'+params);
   buildPclStats();
   updateDetailSummary();
@@ -571,12 +611,13 @@ function buildPclStats(){
   allData.forEach(d=>{
     const p = d.pcl && d.pcl!=='-' ? d.pcl.trim() : null;
     if(!p) return;
-    if(!pclStatsMap[p]) pclStatsMap[p]={submit:0,cacah:0,belum:0,nodata:0,total:0,rows:[]};
+    if(!pclStatsMap[p]) pclStatsMap[p]={submit:0,cacah:0,onprogress:0,belum:0,nodata:0,total:0,rows:[]};
     pclStatsMap[p].total++;
     pclStatsMap[p].rows.push(d);
     if(d.status==='Sudah Submit') pclStatsMap[p].submit++;
     else if(d.status==='Sudah Cacah Belum Submit') pclStatsMap[p].cacah++;
-    else if(d.status==='Reject') pclStatsMap[p].belum++;
+    else if(d.status==='On Progress') pclStatsMap[p].onprogress++;
+    else if(d.status==='Belum Cacah') pclStatsMap[p].belum++;
     else pclStatsMap[p].nodata++;
   });
   allPclList = Object.keys(pclStatsMap).sort();
@@ -585,7 +626,7 @@ function buildPclStats(){
 function updateDetailSummary(){
   const s = allData.filter(d=>d.status==='Sudah Submit').length;
   const c = allData.filter(d=>d.status==='Sudah Cacah Belum Submit').length;
-  const b = allData.filter(d=>d.status==='Reject').length;
+  const b = allData.filter(d=>d.status==='Belum Cacah').length;
   document.getElementById('ds-s').textContent = s;
   document.getElementById('ds-c').textContent = c;
   document.getElementById('ds-b').textContent = b;
@@ -675,8 +716,8 @@ function selectPcl(name){
   // DONUT per PCL
   destroyChart('cPclDonut');
   const dCtx = document.getElementById('cPclDonut').getContext('2d');
-  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','Reject','Tidak Ada RT'];
-  const vals = [ps.submit, ps.cacah, ps.belum, ps.nodata];
+  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','On Progress','Belum Cacah','Tidak Ada RT'];
+  const vals = [ps.submit, ps.cacah, ps.onprogress, ps.belum, ps.nodata];
   charts['cPclDonut'] = new Chart(dCtx, {
     type:'doughnut',
     data:{
@@ -698,10 +739,11 @@ function selectPcl(name){
   // Group by desa
   const desaMap = {};
   ps.rows.forEach(r=>{
-    if(!desaMap[r.desa]) desaMap[r.desa]={submit:0,cacah:0,belum:0,nodata:0};
+    if(!desaMap[r.desa]) desaMap[r.desa]={submit:0,cacah:0,onprogress:0,belum:0,nodata:0};
     if(r.status==='Sudah Submit') desaMap[r.desa].submit++;
     else if(r.status==='Sudah Cacah Belum Submit') desaMap[r.desa].cacah++;
-    else if(r.status==='Reject') desaMap[r.desa].belum++;
+    else if(r.status==='On Progress') desaMap[r.desa].onprogress++;
+    else if(r.status==='Belum Cacah') desaMap[r.desa].belum++;
     else desaMap[r.desa].nodata++;
   });
   const desas = Object.keys(desaMap).sort();
@@ -712,7 +754,8 @@ function selectPcl(name){
       datasets:[
         {label:'Sudah Submit', data:desas.map(d=>desaMap[d].submit), backgroundColor:'#10b981', borderRadius:3},
         {label:'Cacah Blm Submit', data:desas.map(d=>desaMap[d].cacah), backgroundColor:'#f59e0b', borderRadius:3},
-        {label:'Reject', data:desas.map(d=>desaMap[d].belum), backgroundColor:'#ef4444', borderRadius:3},
+        {label:'On Progress', data:desas.map(d=>desaMap[d].onprogress), backgroundColor:'#3b82f6', borderRadius:3},
+        {label:'Belum Cacah', data:desas.map(d=>desaMap[d].belum), backgroundColor:'#ef4444', borderRadius:3},
       ]
     },
     options:{
@@ -772,6 +815,26 @@ async function refreshAll(btn){
 
 // Auto-refresh every 5 minutes
 setInterval(()=>refreshAll(), 5*60*1000);
+
+async function submitLogin() {
+  const pw = document.getElementById('modalPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!pw) return;
+  const fd = new FormData();
+  fd.append('password', pw);
+  const res = await fetch('/admin/login', { method:'POST', body:fd, redirect:'manual' });
+  if (res.type === 'opaqueredirect' || res.status === 0 || res.redirected) {
+    window.location.href = '/admin';
+  } else if (res.ok || res.status === 200) {
+    window.location.href = '/admin';
+  } else {
+    errEl.textContent = '⚠️ Password salah!';
+    errEl.style.display = 'block';
+    document.getElementById('modalPassword').value = '';
+    document.getElementById('modalPassword').focus();
+  }
+}
 </script>
 </body>
 </html>
