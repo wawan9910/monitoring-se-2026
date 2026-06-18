@@ -30,10 +30,10 @@ class BlokSensus(db.Model):
     rt = db.Column(db.Integer, default=0)
     pcl = db.Column(db.String(200))
     pml = db.Column(db.String(200))
-    status = db.Column(db.String(50), default='Belum Cacah')
+    status = db.Column(db.String(50), default='Reject')
     catatan = db.Column(db.Text, default='')
 
-    STATUS_OPTIONS = ['Sudah Submit', 'Sudah Cacah Belum Submit', 'Belum Cacah', 'Tidak Ada RT']
+    STATUS_OPTIONS = ['Sudah Submit', 'Sudah Cacah Belum Submit', 'Reject', 'Tidak Ada RT']
 
     def to_dict(self):
         return {

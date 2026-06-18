@@ -30,6 +30,12 @@ header h1 span { color:#e94560; }
 .btn-refresh:hover { background:#c73652; transform:scale(1.03); }
 .btn-refresh.loading .ico { animation:spin .8s linear infinite; display:inline-block; }
 @keyframes spin { to { transform:rotate(360deg); } }
+.btn-admin {
+  background:rgba(255,255,255,.12); color:white; border:1.5px solid rgba(255,255,255,.25);
+  border-radius:8px; padding:9px 16px; cursor:pointer; font-size:13px; font-weight:600;
+  display:flex; align-items:center; gap:6px; transition:all .2s; text-decoration:none;
+}
+.btn-admin:hover { background:rgba(255,255,255,.22); border-color:rgba(255,255,255,.5); }
 
 .main { max-width:1440px; margin:0 auto; padding:22px 20px; }
 
@@ -73,6 +79,23 @@ header h1 span { color:#e94560; }
 
 /* SECTION & FILTERS */
 .sec-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+
+/* SUMMARY BAR BAWAH */
+.detail-summary {
+  display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;
+}
+.ds-pill {
+  display:flex; align-items:center; gap:8px;
+  background:white; border-radius:10px; padding:10px 16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06); flex:1; min-width:160px;
+}
+.ds-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.ds-val { font-size:22px; font-weight:800; line-height:1; }
+.ds-lbl { font-size:11px; color:#6b7280; margin-top:2px; }
+.ds-green .ds-val { color:#10b981; }
+.ds-yellow .ds-val { color:#f59e0b; }
+.ds-red .ds-val { color:#ef4444; }
+.ds-total .ds-val { color:#0f3460; }
 .sec-title { font-size:15px; font-weight:700; color:#1a1a2e; }
 .filters { display:flex; gap:8px; flex-wrap:wrap; }
 select,input { padding:8px 11px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; color:#374151; background:white; outline:none; transition:border-color .2s; }
@@ -102,6 +125,64 @@ td.bold { font-weight:600; color:#1a1a2e; }
 
 .empty { text-align:center; padding:40px; color:#9ca3af; font-size:14px; }
 
+/* TABS */
+.view-tabs { display:flex; gap:6px; margin-bottom:18px; }
+.tab-btn {
+  padding:9px 20px; border-radius:9px; border:1.5px solid #e5e7eb;
+  background:white; font-size:13px; font-weight:600; cursor:pointer;
+  color:#6b7280; transition:all .2s;
+}
+.tab-btn.active { background:#1a1a2e; color:white; border-color:#1a1a2e; }
+.tab-btn:hover:not(.active) { border-color:#0f3460; color:#0f3460; }
+.tab-pane { display:none; }
+.tab-pane.show { display:block; }
+
+/* PCL ANALYSIS */
+.pcl-top { display:grid; grid-template-columns:280px 1fr; gap:14px; margin-bottom:14px; }
+.pcl-sel-card { background:white; border-radius:14px; padding:18px 20px; box-shadow:0 2px 10px rgba(0,0,0,.07); }
+.pcl-sel-title { font-size:13px; font-weight:700; color:#1a1a2e; margin-bottom:10px; }
+.pcl-search { width:100%; padding:9px 12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; outline:none; margin-bottom:8px; }
+.pcl-search:focus { border-color:#0f3460; }
+.pcl-list { max-height:320px; overflow-y:auto; }
+.pcl-item {
+  padding:9px 12px; border-radius:8px; cursor:pointer; font-size:13px;
+  color:#374151; transition:background .15s; display:flex; justify-content:space-between; align-items:center;
+}
+.pcl-item:hover { background:#f3f4f6; }
+.pcl-item.active { background:#1a1a2e; color:white; }
+.pcl-item .pcl-badge-mini { font-size:10px; background:rgba(255,255,255,.2); padding:2px 6px; border-radius:4px; }
+.pcl-item:not(.active) .pcl-badge-mini { background:#f3f4f6; color:#6b7280; }
+
+.pcl-chart-area { background:white; border-radius:14px; padding:18px 20px; box-shadow:0 2px 10px rgba(0,0,0,.07); }
+.pcl-name-display { font-size:17px; font-weight:800; color:#1a1a2e; margin-bottom:2px; }
+.pcl-sub-display { font-size:12px; color:#9ca3af; margin-bottom:14px; }
+.pcl-stats-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.pcl-stat { flex:1; min-width:100px; padding:10px 14px; border-radius:10px; }
+.pcl-stat-val { font-size:24px; font-weight:800; }
+.pcl-stat-lbl { font-size:11px; margin-top:2px; }
+.pcl-stat-green { background:#d1fae5; }
+.pcl-stat-green .pcl-stat-val { color:#10b981; }
+.pcl-stat-green .pcl-stat-lbl { color:#065f46; }
+.pcl-stat-yellow { background:#fef3c7; }
+.pcl-stat-yellow .pcl-stat-val { color:#f59e0b; }
+.pcl-stat-yellow .pcl-stat-lbl { color:#92400e; }
+.pcl-stat-red { background:#fee2e2; }
+.pcl-stat-red .pcl-stat-val { color:#ef4444; }
+.pcl-stat-red .pcl-stat-lbl { color:#991b1b; }
+.pcl-stat-blue { background:#dbeafe; }
+.pcl-stat-blue .pcl-stat-val { color:#1d4ed8; }
+.pcl-stat-blue .pcl-stat-lbl { color:#1e40af; }
+.pcl-charts-row { display:grid; grid-template-columns:220px 1fr; gap:14px; }
+.ch-pcl-donut { height:180px; display:flex; align-items:center; justify-content:center; }
+.ch-pcl-bar { height:180px; }
+
+/* MINI STAT CELLS IN TABLE */
+.mini-stat { display:flex; gap:4px; align-items:center; }
+.ms { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:700; }
+.ms-g { background:#d1fae5; color:#065f46; }
+.ms-y { background:#fef3c7; color:#92400e; }
+.ms-r { background:#fee2e2; color:#991b1b; }
+
 @media(max-width:900px){
   .cards{grid-template-columns:repeat(2,1fr);}
   .charts-top,.charts-bot{grid-template-columns:1fr;}
@@ -124,6 +205,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
       <div class="time" id="live-time">--:--:--</div>
       <div class="date" id="live-date">---</div>
     </div>
+    <a href="/admin/login" class="btn-admin">⚙️ Login Admin</a>
     <button class="btn-refresh" onclick="refreshAll(this)">
       <span class="ico">🔄</span> Perbarui Data
     </button>
@@ -148,7 +230,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
     <div class="card c-red">
       <div class="card-ico">⏰</div>
       <div class="card-val" id="cnt-b">—</div>
-      <div class="card-lbl">Belum Cacah</div>
+      <div class="card-lbl">Reject</div>
       <div class="card-sub" id="pct-b"></div>
     </div>
     <div class="card c-purple">
@@ -159,6 +241,14 @@ td.bold { font-weight:600; color:#1a1a2e; }
     </div>
   </div>
 
+  <!-- VIEW TABS -->
+  <div class="view-tabs">
+    <button class="tab-btn active" onclick="switchTab('keseluruhan',this)">🌐 Analisis Keseluruhan</button>
+    <button class="tab-btn" onclick="switchTab('petugas',this)">👤 Analisis per Petugas (PCL)</button>
+  </div>
+
+  <!-- TAB: KESELURUHAN -->
+  <div class="tab-pane show" id="tab-keseluruhan">
   <div class="charts-top">
     <div class="chart-card">
       <div class="chart-title">🎯 Status Keseluruhan</div>
@@ -184,6 +274,43 @@ td.bold { font-weight:600; color:#1a1a2e; }
       <div class="ch ch-rt"><canvas id="cRt"></canvas></div>
     </div>
   </div>
+  </div><!-- end tab-keseluruhan -->
+
+  <!-- TAB: PER PETUGAS -->
+  <div class="tab-pane" id="tab-petugas">
+    <div class="pcl-top">
+      <div class="pcl-sel-card">
+        <div class="pcl-sel-title">👤 Pilih Petugas (PCL)</div>
+        <input class="pcl-search" type="text" placeholder="🔍 Cari nama PCL..." oninput="filterPclList(this.value)">
+        <div class="pcl-list" id="pclList"></div>
+      </div>
+      <div class="pcl-chart-area">
+        <div class="pcl-name-display" id="pclNameDisplay">— Pilih petugas di kiri —</div>
+        <div class="pcl-sub-display" id="pclSubDisplay">Klik nama PCL untuk melihat analisis detail</div>
+        <div class="pcl-stats-row">
+          <div class="pcl-stat pcl-stat-blue"><div class="pcl-stat-val" id="ps-total">—</div><div class="pcl-stat-lbl">Total BS</div></div>
+          <div class="pcl-stat pcl-stat-green"><div class="pcl-stat-val" id="ps-s">—</div><div class="pcl-stat-lbl">Sudah Submit</div></div>
+          <div class="pcl-stat pcl-stat-yellow"><div class="pcl-stat-val" id="ps-c">—</div><div class="pcl-stat-lbl">Cacah, Blm Submit</div></div>
+          <div class="pcl-stat pcl-stat-red"><div class="pcl-stat-val" id="ps-b">—</div><div class="pcl-stat-lbl">Reject</div></div>
+        </div>
+        <div class="pcl-charts-row">
+          <div class="ch ch-pcl-donut"><canvas id="cPclDonut"></canvas></div>
+          <div class="ch ch-pcl-bar"><canvas id="cPclBar"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <!-- Tabel BS milik PCL terpilih -->
+    <div class="table-wrap" id="pclTableWrap" style="display:none">
+      <table>
+        <thead>
+          <tr style="background:#1a1a2e;color:white;">
+            <th>#</th><th>Kecamatan</th><th>Desa</th><th>Sub Sektor</th><th>Jml RT</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="pclTBody"></tbody>
+      </table>
+    </div>
+  </div><!-- end tab-petugas -->
 
   <div class="sec-head">
     <div class="sec-title">📋 Detail Data Lapangan</div>
@@ -194,10 +321,42 @@ td.bold { font-weight:600; color:#1a1a2e; }
         <option value="">Semua Status</option>
         <option>Sudah Submit</option>
         <option>Sudah Cacah Belum Submit</option>
-        <option>Belum Cacah</option>
+        <option>Reject</option>
         <option>Tidak Ada RT</option>
       </select>
       <input id="fQ" type="text" placeholder="🔍 Cari PCL / desa..." oninput="debounce(loadTable,400)()">
+    </div>
+  </div>
+
+  <!-- SUMMARY DETAIL -->
+  <div class="detail-summary">
+    <div class="ds-pill ds-green">
+      <div class="ds-dot" style="background:#10b981"></div>
+      <div>
+        <div class="ds-val" id="ds-s">—</div>
+        <div class="ds-lbl">Sudah Submit</div>
+      </div>
+    </div>
+    <div class="ds-pill ds-yellow">
+      <div class="ds-dot" style="background:#f59e0b"></div>
+      <div>
+        <div class="ds-val" id="ds-c">—</div>
+        <div class="ds-lbl">Sudah Cacah, Belum Submit</div>
+      </div>
+    </div>
+    <div class="ds-pill ds-red">
+      <div class="ds-dot" style="background:#ef4444"></div>
+      <div>
+        <div class="ds-val" id="ds-b">—</div>
+        <div class="ds-lbl">Reject</div>
+      </div>
+    </div>
+    <div class="ds-pill ds-total">
+      <div class="ds-dot" style="background:#0f3460"></div>
+      <div>
+        <div class="ds-val" id="ds-t">—</div>
+        <div class="ds-lbl">Total Data (Filter)</div>
+      </div>
     </div>
   </div>
 
@@ -206,7 +365,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
       <thead>
         <tr>
           <th>#</th><th>Kecamatan</th><th>Desa</th><th>Sub Sektor</th>
-          <th>Jml RT</th><th>PCL</th><th>PML</th><th>Status</th>
+          <th>Jml RT</th><th>PCL</th><th>Rekap PCL (✅ Sbm / 📝 Cch / ⏰ Blm)</th><th>PML</th><th>Status</th>
         </tr>
       </thead>
       <tbody id="tBody"></tbody>
@@ -220,16 +379,19 @@ td.bold { font-weight:600; color:#1a1a2e; }
 <script>
 const COLORS = {
   'Sudah Submit':'#10b981','Sudah Cacah Belum Submit':'#f59e0b',
-  'Belum Cacah':'#ef4444','Tidak Ada RT':'#8b5cf6'
+  'Reject':'#ef4444','Tidak Ada RT':'#8b5cf6'
 };
 const BADGE = {
-  'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','Belum Cacah':'bb','Tidak Ada RT':'bn'
+  'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','Reject':'bb','Tidak Ada RT':'bn'
 };
 
 let charts = {};
 let allData = [];
 let currentPage = 1;
 const PAGE = 20;
+let pclStatsMap = {};     // pcl → {submit,cacah,belum,total,desas}
+let allPclList = [];      // sorted list of unique PCL names
+let selectedPcl = null;
 
 // CLOCK
 function tick(){
@@ -246,15 +408,15 @@ async function fetchJSON(url){ const r=await fetch(url); return r.json(); }
 
 async function loadSummary(){
   const s = await fetchJSON('/api/summary');
-  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['Belum Cacah']||0);
+  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['Reject']||0);
   document.getElementById('cnt-s').textContent = s['Sudah Submit']||0;
   document.getElementById('cnt-c').textContent = s['Sudah Cacah Belum Submit']||0;
-  document.getElementById('cnt-b').textContent = s['Belum Cacah']||0;
+  document.getElementById('cnt-b').textContent = s['Reject']||0;
   document.getElementById('cnt-n').textContent = s['Tidak Ada RT']||0;
   const pct = v => active>0?Math.round((v||0)/active*100)+'% dari BS aktif':'';
   document.getElementById('pct-s').textContent = pct(s['Sudah Submit']);
   document.getElementById('pct-c').textContent = pct(s['Sudah Cacah Belum Submit']);
-  document.getElementById('pct-b').textContent = pct(s['Belum Cacah']);
+  document.getElementById('pct-b').textContent = pct(s['Reject']);
   return s;
 }
 
@@ -287,7 +449,7 @@ async function loadCharts(){
   });
 
   const kecList = Object.keys(chartData).sort();
-  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','Belum Cacah','Tidak Ada RT'];
+  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','Reject','Tidak Ada RT'];
 
   // STACKED BAR
   destroyChart('cBar');
@@ -315,7 +477,7 @@ async function loadCharts(){
   // HORIZONTAL BAR %
   const pctArr = kecList.map(k=>{
     const d=chartData[k]||{};
-    const tot=(d['Sudah Submit']?.count||0)+(d['Sudah Cacah Belum Submit']?.count||0)+(d['Belum Cacah']?.count||0);
+    const tot=(d['Sudah Submit']?.count||0)+(d['Sudah Cacah Belum Submit']?.count||0)+(d['Reject']?.count||0);
     return tot>0?Math.round((d['Sudah Submit']?.count||0)/tot*100):0;
   });
   const sortedIdx=[...Array(kecList.length).keys()].sort((a,b)=>pctArr[b]-pctArr[a]);
@@ -344,7 +506,7 @@ async function loadCharts(){
   });
 
   // RT CHART
-  const rtStat = ['Sudah Submit','Sudah Cacah Belum Submit','Belum Cacah'];
+  const rtStat = ['Sudah Submit','Sudah Cacah Belum Submit','Reject'];
   destroyChart('cRt');
   const rtCtx = document.getElementById('cRt').getContext('2d');
   charts['cRt'] = new Chart(rtCtx, {
@@ -397,24 +559,66 @@ async function loadTable(){
   const q = document.getElementById('fQ').value;
   const params = new URLSearchParams({kec,desa,status,q});
   allData = await fetchJSON('/api/data?'+params);
+  buildPclStats();
+  updateDetailSummary();
   renderTable();
+  renderPclList();
+}
+
+function buildPclStats(){
+  // Build from ALL data (no filter) so PCL totals are always global
+  pclStatsMap = {};
+  allData.forEach(d=>{
+    const p = d.pcl && d.pcl!=='-' ? d.pcl.trim() : null;
+    if(!p) return;
+    if(!pclStatsMap[p]) pclStatsMap[p]={submit:0,cacah:0,belum:0,nodata:0,total:0,rows:[]};
+    pclStatsMap[p].total++;
+    pclStatsMap[p].rows.push(d);
+    if(d.status==='Sudah Submit') pclStatsMap[p].submit++;
+    else if(d.status==='Sudah Cacah Belum Submit') pclStatsMap[p].cacah++;
+    else if(d.status==='Reject') pclStatsMap[p].belum++;
+    else pclStatsMap[p].nodata++;
+  });
+  allPclList = Object.keys(pclStatsMap).sort();
+}
+
+function updateDetailSummary(){
+  const s = allData.filter(d=>d.status==='Sudah Submit').length;
+  const c = allData.filter(d=>d.status==='Sudah Cacah Belum Submit').length;
+  const b = allData.filter(d=>d.status==='Reject').length;
+  document.getElementById('ds-s').textContent = s;
+  document.getElementById('ds-c').textContent = c;
+  document.getElementById('ds-b').textContent = b;
+  document.getElementById('ds-t').textContent = allData.length;
 }
 
 function renderTable(){
   const start=(currentPage-1)*PAGE;
   const page=allData.slice(start,start+PAGE);
-  document.getElementById('tBody').innerHTML = page.length ? page.map((d,i)=>`
-    <tr>
+  document.getElementById('tBody').innerHTML = page.length ? page.map((d,i)=>{
+    const pn = d.pcl && d.pcl!=='-' ? d.pcl.trim() : null;
+    const ps = pn && pclStatsMap[pn] ? pclStatsMap[pn] : null;
+    const rekap = ps
+      ? `<div class="mini-stat">
+           <span class="ms ms-g">✅ ${ps.submit}</span>
+           <span class="ms ms-y">📝 ${ps.cacah}</span>
+           <span class="ms ms-r">⏰ ${ps.belum}</span>
+         </div>`
+      : '<span style="color:#d1d5db;font-size:11px">—</span>';
+    return `<tr>
       <td style="color:#9ca3af">${start+i+1}</td>
       <td class="bold">${d.kecamatan}</td>
       <td>${d.desa}</td>
       <td style="font-size:12px;color:#6b7280">${d.nmsls}</td>
       <td style="text-align:right;font-weight:600">${d.rt.toLocaleString('id')}</td>
-      <td style="font-size:12px">${d.pcl}</td>
+      <td style="font-size:12px;cursor:pointer;color:#0f3460;font-weight:600" onclick="jumpToPcl('${(pn||'').replace(/'/g,"\\'")}')">
+        ${d.pcl}${pn?'<span style="font-size:10px;color:#9ca3af;font-weight:400"> ↗</span>':''}
+      </td>
+      <td>${rekap}</td>
       <td style="font-size:12px;color:#6b7280">${d.pml}</td>
       <td><span class="badge ${BADGE[d.status]||'bn'}">${d.status}</span></td>
-    </tr>
-  `).join('') : '<tr><td colspan="8" class="empty">Tidak ada data ditemukan</td></tr>';
+    </tr>`;
+  }).join('') : '<tr><td colspan="9" class="empty">Tidak ada data ditemukan</td></tr>';
 
   const total=allData.length, totalPages=Math.ceil(total/PAGE);
   document.getElementById('pageInfo').textContent =
@@ -435,6 +639,123 @@ function renderTable(){
   }
   range.forEach(p=>{ if(p==='...'){const s=document.createElement('span');s.textContent='…';s.style.padding='5px 3px';pag.appendChild(s);}else addBtn(p,p,p===currentPage); });
   addBtn('›',currentPage+1,false,currentPage===totalPages);
+}
+
+// ── PCL ANALYSIS ──────────────────────────────────────
+function renderPclList(filter=''){
+  const list = document.getElementById('pclList');
+  const term = filter.toLowerCase();
+  const filtered = allPclList.filter(p=>p.toLowerCase().includes(term));
+  list.innerHTML = filtered.map(p=>{
+    const ps = pclStatsMap[p];
+    const pct = ps.total>0 ? Math.round(ps.submit/ps.total*100) : 0;
+    return `<div class="pcl-item${p===selectedPcl?' active':''}" onclick="selectPcl('${p.replace(/'/g,"\\'")}')">
+      <span>${p}</span>
+      <span class="pcl-badge-mini">${ps.submit}/${ps.total} (${pct}%)</span>
+    </div>`;
+  }).join('') || '<div style="padding:12px;color:#9ca3af;font-size:12px;">Tidak ada hasil</div>';
+}
+
+function filterPclList(v){ renderPclList(v); }
+
+function selectPcl(name){
+  selectedPcl = name;
+  renderPclList(document.querySelector('.pcl-search').value);
+  const ps = pclStatsMap[name];
+  if(!ps) return;
+
+  document.getElementById('pclNameDisplay').textContent = name;
+  const kecs = [...new Set(ps.rows.map(r=>r.kecamatan))].join(', ');
+  document.getElementById('pclSubDisplay').textContent = `Kecamatan: ${kecs} · Total ${ps.total} BS`;
+  document.getElementById('ps-total').textContent = ps.total;
+  document.getElementById('ps-s').textContent = ps.submit;
+  document.getElementById('ps-c').textContent = ps.cacah;
+  document.getElementById('ps-b').textContent = ps.belum;
+
+  // DONUT per PCL
+  destroyChart('cPclDonut');
+  const dCtx = document.getElementById('cPclDonut').getContext('2d');
+  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','Reject','Tidak Ada RT'];
+  const vals = [ps.submit, ps.cacah, ps.belum, ps.nodata];
+  charts['cPclDonut'] = new Chart(dCtx, {
+    type:'doughnut',
+    data:{
+      labels: statList,
+      datasets:[{ data:vals, backgroundColor:statList.map(k=>COLORS[k]), borderWidth:3, borderColor:'#fff', hoverOffset:6 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{position:'bottom',labels:{padding:8,font:{size:10},boxWidth:10}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}`}}
+      }
+    }
+  });
+
+  // BAR per BS milik PCL ini (status per BS)
+  destroyChart('cPclBar');
+  const bCtx = document.getElementById('cPclBar').getContext('2d');
+  // Group by desa
+  const desaMap = {};
+  ps.rows.forEach(r=>{
+    if(!desaMap[r.desa]) desaMap[r.desa]={submit:0,cacah:0,belum:0,nodata:0};
+    if(r.status==='Sudah Submit') desaMap[r.desa].submit++;
+    else if(r.status==='Sudah Cacah Belum Submit') desaMap[r.desa].cacah++;
+    else if(r.status==='Reject') desaMap[r.desa].belum++;
+    else desaMap[r.desa].nodata++;
+  });
+  const desas = Object.keys(desaMap).sort();
+  charts['cPclBar'] = new Chart(bCtx, {
+    type:'bar',
+    data:{
+      labels: desas,
+      datasets:[
+        {label:'Sudah Submit', data:desas.map(d=>desaMap[d].submit), backgroundColor:'#10b981', borderRadius:3},
+        {label:'Cacah Blm Submit', data:desas.map(d=>desaMap[d].cacah), backgroundColor:'#f59e0b', borderRadius:3},
+        {label:'Reject', data:desas.map(d=>desaMap[d].belum), backgroundColor:'#ef4444', borderRadius:3},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{padding:8,font:{size:10},boxWidth:10}},tooltip:{mode:'index',intersect:false}},
+      scales:{
+        x:{stacked:true, ticks:{font:{size:9},maxRotation:35}, grid:{display:false}},
+        y:{stacked:true, ticks:{font:{size:10},stepSize:1}, grid:{color:'#f3f4f6'}}
+      }
+    }
+  });
+
+  // Tabel BS
+  const wrap = document.getElementById('pclTableWrap');
+  wrap.style.display = 'block';
+  document.getElementById('pclTBody').innerHTML = ps.rows.map((r,i)=>`
+    <tr>
+      <td style="color:#9ca3af">${i+1}</td>
+      <td class="bold">${r.kecamatan}</td>
+      <td>${r.desa}</td>
+      <td style="font-size:12px;color:#6b7280">${r.nmsls}</td>
+      <td style="text-align:right;font-weight:600">${r.rt.toLocaleString('id')}</td>
+      <td><span class="badge ${BADGE[r.status]||'bn'}">${r.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function jumpToPcl(name){
+  if(!name || !pclStatsMap[name]) return;
+  // switch tab then select PCL
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('show'));
+  document.getElementById('tab-petugas').classList.add('show');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  selectPcl(name);
+  document.getElementById('tab-petugas').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('show'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('show');
 }
 
 async function refreshAll(btn){
