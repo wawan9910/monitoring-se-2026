@@ -4,7 +4,6 @@ from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
-import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'monitoring-se-2026-secret')
@@ -52,48 +51,24 @@ class BlokSensus(db.Model):
 
 
 def load_excel_data():
-    xl_path = os.path.join(os.path.dirname(__file__), '..', 'Data Lapangan.xlsx')
-    if not os.path.exists(xl_path):
-        xl_path = os.path.join(os.path.dirname(__file__), 'Data Lapangan.xlsx')
-    if not os.path.exists(xl_path):
+    seed_path = os.path.join(os.path.dirname(__file__), 'seed_data.json')
+    if not os.path.exists(seed_path):
         return
 
-    df = pd.read_excel(xl_path, header=0)
-    df.columns = ['idsubsls','nmsls','nmkec','nmdesa','rt_cacah','total_bs',
-                  'PCL1','PML1','bs_seq','pml_group',
-                  'PCL2','PCL3','PCL4','PCL5','PCL6',
-                  'col15','col16','seg1','seg2','seg3','seg4','seg5']
+    with open(seed_path, encoding='utf-8') as f:
+        records = json.load(f)
 
-    df = df[df['nmkec'].notna()]
-    df = df[df['nmkec'].astype(str).str.strip() != 'nan']
-
-    for _, row in df.iterrows():
-        pcl = str(row['PCL1']) if pd.notna(row['PCL1']) else ''
-        if not pcl or pcl == 'nan':
-            pcl = str(row['PCL2']) if pd.notna(row['PCL2']) else '-'
-        if not pcl or pcl == 'nan':
-            pcl = '-'
-
-        pml = str(row['PML1']) if pd.notna(row['PML1']) else ''
-        if not pml or pml == 'nan':
-            pml = str(row['pml_group']) if pd.notna(row['pml_group']) else '-'
-        if not pml or pml == 'nan':
-            pml = '-'
-
-        nmsls = str(row['nmsls']).upper() if pd.notna(row['nmsls']) else ''
-        rt = int(row['rt_cacah']) if pd.notna(row['rt_cacah']) else 0
-        status = 'Tidak Ada RT' if 'HUTAN' in nmsls and rt == 0 else 'Belum Cacah'
-
+    for r in records:
         bs = BlokSensus(
-            idsubsls=str(row['idsubsls']) if pd.notna(row['idsubsls']) else '',
-            nmsls=str(row['nmsls']) if pd.notna(row['nmsls']) else '',
-            kecamatan=str(row['nmkec']),
-            desa=str(row['nmdesa']) if pd.notna(row['nmdesa']) else '',
-            rt=rt,
-            pcl=pcl,
-            pml=pml,
-            status=status,
-            catatan='',
+            idsubsls=r['idsubsls'],
+            nmsls=r['nmsls'],
+            kecamatan=r['kecamatan'],
+            desa=r['desa'],
+            rt=r['rt'],
+            pcl=r['pcl'],
+            pml=r['pml'],
+            status=r['status'],
+            catatan=r.get('catatan', ''),
         )
         db.session.add(bs)
 
