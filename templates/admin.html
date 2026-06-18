@@ -178,6 +178,7 @@ td.bold { font-weight:600; color:#1a1a2e; }
     <button class="btn btn-yellow" onclick="bulkUpdate('Sudah Cacah Belum Submit')">📝 Sudah Cacah Belum Submit</button>
     <button class="btn btn-primary" onclick="bulkUpdate('On Progress')" style="background:#3b82f6">🔄 On Progress</button>
     <button class="btn btn-red" onclick="bulkUpdate('Belum Cacah')">⏰ Belum Cacah</button>
+    <button class="btn" onclick="bulkDelete()" style="background:#dc2626;color:white;">🗑️ Hapus yang Dipilih</button>
     <button class="btn btn-outline" onclick="clearSelection()">✕ Batal</button>
   </div>
 
@@ -378,6 +379,15 @@ function toggleRow(id,cb){ if(cb.checked)selectedIds.add(id); else selectedIds.d
 function toggleAll(cb){ const start=(currentPage-1)*PAGE; const page=allData.slice(start,start+PAGE); page.forEach(d=>{ if(cb.checked)selectedIds.add(d.id); else selectedIds.delete(d.id); const row=document.getElementById('row-'+d.id); if(row)row.classList.toggle('selected',cb.checked); }); const checks=document.querySelectorAll('#tBody input[type=checkbox]'); checks.forEach(c=>c.checked=cb.checked); updateBulkBar(); }
 function clearSelection(){ selectedIds.clear(); document.querySelectorAll('#tBody input[type=checkbox]').forEach(c=>c.checked=false); document.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('selected')); document.getElementById('checkAll').checked=false; updateBulkBar(); }
 function updateBulkBar(){ const bar=document.getElementById('bulkBar'); const n=selectedIds.size; bar.classList.toggle('show',n>0); document.getElementById('bulkCount').textContent=`${n} data dipilih`; }
+
+async function bulkDelete(){
+  if(!selectedIds.size)return;
+  const ids=[...selectedIds];
+  if(!confirm(`Hapus ${ids.length} record yang dipilih? Tindakan tidak bisa dibatalkan.`))return;
+  const r=await fetch('/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids})});
+  if(r.ok){ toast(`🗑️ ${ids.length} record dihapus`,'ok'); clearSelection(); await loadTable(); loadStats(); }
+  else { toast('❌ Gagal menghapus','err'); }
+}
 
 async function deleteRecord(id){
   if(!confirm('Hapus record ini? Tindakan tidak bisa dibatalkan.'))return;
