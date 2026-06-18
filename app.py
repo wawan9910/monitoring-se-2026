@@ -222,6 +222,27 @@ def update_record():
     return jsonify({'ok': True, 'record': bs.to_dict()})
 
 
+@app.route('/admin/delete', methods=['POST'])
+@login_required
+def delete_record():
+    data = request.get_json()
+    ids = data.get('ids', [])
+    if not ids:
+        return jsonify({'error': 'No ids'}), 400
+    BlokSensus.query.filter(BlokSensus.id.in_(ids)).delete(synchronize_session=False)
+    db.session.commit()
+    return jsonify({'ok': True, 'deleted': len(ids)})
+
+
+@app.route('/admin/reset-db', methods=['POST'])
+@login_required
+def reset_db():
+    db.session.query(BlokSensus).delete()
+    db.session.commit()
+    load_excel_data()
+    return jsonify({'ok': True, 'total': BlokSensus.query.count()})
+
+
 @app.route('/admin/bulk-update', methods=['POST'])
 @login_required
 def bulk_update():
