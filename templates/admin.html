@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel – Monitoring SE 2026</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f2f5; color:#1a1a2e; }
+
+header {
+  background:linear-gradient(135deg,#1a1a2e,#0f3460);
+  color:white; padding:14px 28px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+}
+header h1 { font-size:18px; font-weight:700; }
+header h1 span { color:#e94560; }
+.nav-links { display:flex; gap:10px; align-items:center; }
+.nav-links a {
+  color:rgba(255,255,255,.8); text-decoration:none; font-size:13px;
+  padding:7px 14px; border-radius:7px; transition:all .2s;
+}
+.nav-links a:hover { background:rgba(255,255,255,.15); color:white; }
+.nav-links a.danger { color:#f87171; }
+.nav-links a.danger:hover { background:rgba(239,68,68,.2); }
+
+.main { max-width:1400px; margin:0 auto; padding:22px 20px; }
+
+/* STATS BAR */
+.stats-bar { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.stat { background:white; border-radius:10px; padding:12px 18px; flex:1; min-width:140px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06); display:flex; align-items:center; gap:10px; }
+.stat-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+.stat-val { font-size:22px; font-weight:800; }
+.stat-lbl { font-size:11px; color:#6b7280; margin-top:1px; }
+
+/* TOOLBAR */
+.toolbar {
+  background:white; border-radius:12px; padding:16px 18px; margin-bottom:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+.toolbar-title { font-weight:700; font-size:14px; margin-right:4px; }
+select, input { padding:8px 11px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; color:#374151; background:white; outline:none; transition:border-color .2s; }
+select:focus, input:focus { border-color:#0f3460; }
+input[type=text] { min-width:180px; }
+.spacer { flex:1; }
+
+.btn { padding:8px 16px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
+.btn-primary { background:#0f3460; color:white; }
+.btn-primary:hover { background:#16213e; }
+.btn-green { background:#10b981; color:white; }
+.btn-green:hover { background:#059669; }
+.btn-yellow { background:#f59e0b; color:white; }
+.btn-yellow:hover { background:#d97706; }
+.btn-red { background:#ef4444; color:white; }
+.btn-red:hover { background:#dc2626; }
+.btn-outline { background:white; color:#374151; border:1.5px solid #e5e7eb; }
+.btn-outline:hover { border-color:#0f3460; color:#0f3460; }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+
+/* BULK ACTION BAR */
+.bulk-bar {
+  background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:10px;
+  padding:11px 16px; margin-bottom:12px;
+  display:none; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.bulk-bar.show { display:flex; }
+.bulk-bar strong { font-size:13px; color:#1d4ed8; }
+
+/* TABLE */
+.table-wrap { background:white; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead { background:#1a1a2e; color:white; }
+th { padding:11px 12px; text-align:left; font-weight:600; white-space:nowrap; }
+th input[type=checkbox] { cursor:pointer; width:15px; height:15px; }
+tbody tr { border-bottom:1px solid #f3f4f6; transition:background .12s; }
+tbody tr:hover { background:#f9fafb; }
+tbody tr.selected { background:#eff6ff; }
+td { padding:9px 12px; color:#374151; vertical-align:middle; }
+td.bold { font-weight:600; color:#1a1a2e; }
+
+.badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; }
+.bs { background:#d1fae5; color:#065f46; }
+.bc { background:#fef3c7; color:#92400e; }
+.bb { background:#fee2e2; color:#991b1b; }
+.bn { background:#ede9fe; color:#5b21b6; }
+
+/* STATUS SELECT inline */
+.status-sel {
+  padding:4px 8px; border:1.5px solid #e5e7eb; border-radius:6px;
+  font-size:12px; font-weight:600; cursor:pointer; outline:none;
+}
+.status-sel.changed { border-color:#f59e0b; background:#fef9c3; }
+
+.save-row { padding:3px 9px; border-radius:6px; border:none; font-size:11px; font-weight:600; cursor:pointer; }
+.save-row { background:#10b981; color:white; }
+.save-row:hover { background:#059669; }
+
+.note-inp { width:100%; padding:3px 7px; border:1.5px solid #e5e7eb; border-radius:6px; font-size:12px; outline:none; }
+.note-inp:focus { border-color:#0f3460; }
+
+/* PAGINATION */
+.pagination { display:flex; gap:5px; justify-content:center; padding:13px; flex-wrap:wrap; }
+.page-btn { padding:5px 11px; border:1.5px solid #e5e7eb; border-radius:7px; background:white; cursor:pointer; font-size:12px; transition:all .15s; }
+.page-btn:hover,.page-btn.active { background:#0f3460; color:white; border-color:#0f3460; font-weight:700; }
+.page-info { font-size:11px; color:#9ca3af; text-align:center; padding:0 0 8px; }
+
+/* TOAST */
+.toast-wrap { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:8px; z-index:9999; }
+.toast {
+  padding:12px 18px; border-radius:10px; font-size:13px; font-weight:600;
+  color:white; box-shadow:0 4px 16px rgba(0,0,0,.2);
+  animation:slideIn .25s ease;
+}
+.toast-ok { background:#10b981; }
+.toast-err { background:#ef4444; }
+@keyframes slideIn { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:none} }
+
+/* MODAL DETAIL */
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; align-items:center; justify-content:center; }
+.overlay.show { display:flex; }
+.modal { background:white; border-radius:16px; padding:28px 30px; width:500px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+.modal h2 { font-size:16px; font-weight:700; margin-bottom:18px; }
+.modal-row { margin-bottom:14px; }
+.modal-row label { font-size:12px; font-weight:600; color:#6b7280; display:block; margin-bottom:4px; }
+.modal-row input, .modal-row select, .modal-row textarea {
+  width:100%; padding:9px 12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; outline:none;
+}
+.modal-row textarea { resize:vertical; height:70px; }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+
+.empty { text-align:center; padding:40px; color:#9ca3af; font-size:14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ Admin Panel — <span>SE 2026</span></h1>
+  <div class="nav-links">
+    <a href="/">🏠 Dashboard Publik</a>
+    <a href="/admin/logout" class="danger">🚪 Keluar</a>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats-bar" id="statsBar"></div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <span class="toolbar-title">🔍 Filter:</span>
+    <select id="fKec" onchange="onKecChange()"><option value="">Semua Kecamatan</option></select>
+    <select id="fDesa" onchange="loadTable()"><option value="">Semua Desa</option></select>
+    <select id="fStatus" onchange="loadTable()">
+      <option value="">Semua Status</option>
+      <option>Sudah Submit</option>
+      <option>Sudah Cacah Belum Submit</option>
+      <option>Belum Cacah</option>
+      <option>Tidak Ada RT</option>
+    </select>
+    <input id="fQ" type="text" placeholder="🔍 Cari PCL / desa..." oninput="debounce(loadTable,400)()">
+    <div class="spacer"></div>
+    <button class="btn btn-outline" onclick="loadTable()">🔄 Refresh</button>
+  </div>
+
+  <!-- BULK ACTION -->
+  <div class="bulk-bar" id="bulkBar">
+    <strong id="bulkCount">0 data dipilih</strong>
+    <span style="font-size:13px;color:#374151;">Ubah status menjadi:</span>
+    <button class="btn btn-green" onclick="bulkUpdate('Sudah Submit')">✅ Sudah Submit</button>
+    <button class="btn btn-yellow" onclick="bulkUpdate('Sudah Cacah Belum Submit')">📝 Sudah Cacah Belum Submit</button>
+    <button class="btn btn-red" onclick="bulkUpdate('Belum Cacah')">⏰ Belum Cacah</button>
+    <button class="btn btn-outline" onclick="clearSelection()">✕ Batal</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
+          <th>#</th><th>Kecamatan</th><th>Desa</th><th>Sub Sektor</th>
+          <th>RT</th><th>PCL</th><th>Status</th><th>Catatan</th><th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tBody"></tbody>
+    </table>
+    <div class="page-info" id="pageInfo"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL EDIT -->
+<div class="overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>✏️ Edit Detail Record</h2>
+    <input type="hidden" id="mId">
+    <div class="modal-row">
+      <label>Sub Sektor</label>
+      <input id="mNmsls" readonly style="background:#f9fafb">
+    </div>
+    <div class="modal-row">
+      <label>Kecamatan / Desa</label>
+      <input id="mLoc" readonly style="background:#f9fafb">
+    </div>
+    <div class="modal-row">
+      <label>PCL (Petugas Pencacah)</label>
+      <input id="mPcl" type="text">
+    </div>
+    <div class="modal-row">
+      <label>PML (Pemeriksa)</label>
+      <input id="mPml" type="text">
+    </div>
+    <div class="modal-row">
+      <label>Jumlah Rumah Tangga</label>
+      <input id="mRt" type="number" min="0">
+    </div>
+    <div class="modal-row">
+      <label>Status</label>
+      <select id="mStatus">
+        <option>Sudah Submit</option>
+        <option>Sudah Cacah Belum Submit</option>
+        <option>Belum Cacah</option>
+        <option>Tidak Ada RT</option>
+      </select>
+    </div>
+    <div class="modal-row">
+      <label>Catatan</label>
+      <textarea id="mNote" placeholder="Tuliskan catatan jika ada..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('modalOverlay').classList.remove('show')">Batal</button>
+      <button class="btn btn-primary" onclick="saveModal()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const BADGE = {'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','Belum Cacah':'bb','Tidak Ada RT':'bn'};
+const COLORS_DOT = {'Sudah Submit':'#10b981','Sudah Cacah Belum Submit':'#f59e0b','Belum Cacah':'#ef4444','Tidak Ada RT':'#8b5cf6'};
+
+let allData = [], selectedIds = new Set();
+let currentPage = 1;
+const PAGE = 25;
+
+function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+async function fetchJSON(url){ const r=await fetch(url); return r.json(); }
+
+async function loadStats(){
+  const s = await fetchJSON('/api/summary');
+  const total = Object.values(s).reduce((a,b)=>a+b,0);
+  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['Belum Cacah']||0);
+  const labels = [
+    {k:'Sudah Submit',lbl:'Sudah Submit'},
+    {k:'Sudah Cacah Belum Submit',lbl:'Cacah, Belum Submit'},
+    {k:'Belum Cacah',lbl:'Belum Cacah'},
+    {k:'Tidak Ada RT',lbl:'Tidak Ada RT'},
+  ];
+  document.getElementById('statsBar').innerHTML = labels.map(({k,lbl})=>`
+    <div class="stat">
+      <div class="stat-dot" style="background:${COLORS_DOT[k]}"></div>
+      <div>
+        <div class="stat-val" style="color:${COLORS_DOT[k]}">${s[k]||0}</div>
+        <div class="stat-lbl">${lbl}</div>
+      </div>
+    </div>
+  `).join('') + `<div class="stat"><div><div class="stat-val">${total}</div><div class="stat-lbl">Total BS</div></div></div>
+    <div class="stat"><div><div class="stat-val" style="color:#0f3460">${active>0?Math.round((s['Sudah Submit']||0)/active*100):0}%</div><div class="stat-lbl">Progress Submit</div></div></div>`;
+}
+
+async function loadKec(){
+  const kecs = await fetchJSON('/api/kecamatan');
+  const sel = document.getElementById('fKec');
+  sel.innerHTML = '<option value="">Semua Kecamatan</option>';
+  kecs.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; sel.appendChild(o); });
+}
+
+async function onKecChange(){
+  const kec = document.getElementById('fKec').value;
+  const desas = await fetchJSON('/api/desa?kec='+encodeURIComponent(kec));
+  const sel = document.getElementById('fDesa');
+  sel.innerHTML = '<option value="">Semua Desa</option>';
+  desas.forEach(d=>{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+  loadTable();
+}
+
+async function loadTable(){
+  currentPage=1; selectedIds.clear(); updateBulkBar();
+  const kec=document.getElementById('fKec').value;
+  const desa=document.getElementById('fDesa').value;
+  const status=document.getElementById('fStatus').value;
+  const q=document.getElementById('fQ').value;
+  allData = await fetchJSON('/api/data?'+new URLSearchParams({kec,desa,status,q}));
+  renderTable();
+}
+
+function renderTable(){
+  const start=(currentPage-1)*PAGE;
+  const page=allData.slice(start,start+PAGE);
+  document.getElementById('tBody').innerHTML = page.length ? page.map((d,i)=>`
+    <tr id="row-${d.id}" class="${selectedIds.has(d.id)?'selected':''}">
+      <td><input type="checkbox" ${selectedIds.has(d.id)?'checked':''} onchange="toggleRow(${d.id},this)"></td>
+      <td style="color:#9ca3af">${start+i+1}</td>
+      <td class="bold">${d.kecamatan}</td>
+      <td>${d.desa}</td>
+      <td style="font-size:11px;color:#6b7280;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.nmsls}">${d.nmsls}</td>
+      <td style="text-align:right;font-weight:600">${d.rt.toLocaleString('id')}</td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.pcl}">${d.pcl}</td>
+      <td>
+        <select class="status-sel" data-id="${d.id}" onchange="quickStatus(this)">
+          ${['Sudah Submit','Sudah Cacah Belum Submit','Belum Cacah','Tidak Ada RT'].map(s=>`<option${s===d.status?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td><input class="note-inp" value="${escHtml(d.catatan||'')}" data-id="${d.id}" onblur="saveNote(this)" placeholder="catatan..."></td>
+      <td>
+        <button class="save-row" onclick="openModal(${d.id})">✏️ Detail</button>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="10" class="empty">Tidak ada data</td></tr>';
+
+  const total=allData.length, tp=Math.ceil(total/PAGE);
+  document.getElementById('pageInfo').textContent = total?`Menampilkan ${Math.min(start+1,total)}–${Math.min(start+PAGE,total)} dari ${total} data`:'';
+  const pag=document.getElementById('pagination'); pag.innerHTML='';
+  if(tp<=1)return;
+  const addBtn=(lbl,pg,active=false,disabled=false)=>{
+    const b=document.createElement('button'); b.className='page-btn'+(active?' active':''); b.textContent=lbl; b.disabled=disabled;
+    b.onclick=()=>{currentPage=pg;renderTable();}; pag.appendChild(b);
+  };
+  addBtn('‹',currentPage-1,false,currentPage===1);
+  const range=[];
+  for(let p=1;p<=tp;p++){ if(p===1||p===tp||Math.abs(p-currentPage)<=2)range.push(p); else if(range[range.length-1]!=='...')range.push('...'); }
+  range.forEach(p=>{ if(p==='...'){const s=document.createElement('span');s.textContent='…';s.style.padding='5px 3px';pag.appendChild(s);}else addBtn(p,p,p===currentPage); });
+  addBtn('›',currentPage+1,false,currentPage===tp);
+}
+
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function quickStatus(sel){
+  sel.classList.add('changed');
+  const id=parseInt(sel.dataset.id), status=sel.value;
+  const r=await fetch('/admin/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,status})});
+  if(r.ok){ toast('✅ Status diperbarui!','ok'); loadStats(); sel.classList.remove('changed'); }
+  else { toast('❌ Gagal menyimpan','err'); }
+}
+
+async function saveNote(inp){
+  const id=parseInt(inp.dataset.id), catatan=inp.value;
+  await fetch('/admin/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,catatan})});
+}
+
+// BULK
+function toggleRow(id,cb){ if(cb.checked)selectedIds.add(id); else selectedIds.delete(id); document.getElementById('row-'+id).classList.toggle('selected',cb.checked); updateBulkBar(); }
+function toggleAll(cb){ const start=(currentPage-1)*PAGE; const page=allData.slice(start,start+PAGE); page.forEach(d=>{ if(cb.checked)selectedIds.add(d.id); else selectedIds.delete(d.id); const row=document.getElementById('row-'+d.id); if(row)row.classList.toggle('selected',cb.checked); }); const checks=document.querySelectorAll('#tBody input[type=checkbox]'); checks.forEach(c=>c.checked=cb.checked); updateBulkBar(); }
+function clearSelection(){ selectedIds.clear(); document.querySelectorAll('#tBody input[type=checkbox]').forEach(c=>c.checked=false); document.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('selected')); document.getElementById('checkAll').checked=false; updateBulkBar(); }
+function updateBulkBar(){ const bar=document.getElementById('bulkBar'); const n=selectedIds.size; bar.classList.toggle('show',n>0); document.getElementById('bulkCount').textContent=`${n} data dipilih`; }
+
+async function bulkUpdate(status){
+  if(!selectedIds.size)return;
+  const ids=[...selectedIds];
+  const r=await fetch('/admin/bulk-update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids,status})});
+  if(r.ok){ toast(`✅ ${ids.length} data diperbarui ke "${status}"!`,'ok'); clearSelection(); await loadTable(); loadStats(); }
+  else { toast('❌ Gagal bulk update','err'); }
+}
+
+// MODAL
+function openModal(id){
+  const d=allData.find(r=>r.id===id); if(!d)return;
+  document.getElementById('mId').value=d.id;
+  document.getElementById('mNmsls').value=d.nmsls;
+  document.getElementById('mLoc').value=d.kecamatan+' / '+d.desa;
+  document.getElementById('mPcl').value=d.pcl;
+  document.getElementById('mPml').value=d.pml;
+  document.getElementById('mRt').value=d.rt;
+  document.getElementById('mStatus').value=d.status;
+  document.getElementById('mNote').value=d.catatan||'';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(e){ if(e.target===document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.remove('show'); }
+
+async function saveModal(){
+  const id=parseInt(document.getElementById('mId').value);
+  const data={id,pcl:document.getElementById('mPcl').value,pml:document.getElementById('mPml').value,rt:document.getElementById('mRt').value,status:document.getElementById('mStatus').value,catatan:document.getElementById('mNote').value};
+  const r=await fetch('/admin/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  if(r.ok){ toast('✅ Record disimpan!','ok'); document.getElementById('modalOverlay').classList.remove('show'); await loadTable(); loadStats(); }
+  else { toast('❌ Gagal menyimpan','err'); }
+}
+
+// TOAST
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastWrap');
+  const t=document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg; w.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+(async()=>{ await loadKec(); await loadStats(); await loadTable(); })();
+</script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Monitoring SE 2026 – Maluku Barat Daya</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f2f5; color:#1a1a2e; }
+
+header {
+  background: linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  color:white; padding:18px 32px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+header h1 { font-size:20px; font-weight:700; }
+header h1 span { color:#e94560; }
+.header-sub { font-size:12px; opacity:.7; margin-top:3px; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.live-badge { background:rgba(255,255,255,.1); border-radius:8px; padding:8px 14px; text-align:right; }
+.live-badge .time { font-size:14px; font-weight:600; }
+.live-badge .date { font-size:11px; opacity:.75; }
+.btn-refresh {
+  background:#e94560; color:white; border:none; border-radius:8px;
+  padding:9px 16px; cursor:pointer; font-size:13px; font-weight:600;
+  display:flex; align-items:center; gap:6px; transition:all .2s;
+}
+.btn-refresh:hover { background:#c73652; transform:scale(1.03); }
+.btn-refresh.loading .ico { animation:spin .8s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.main { max-width:1440px; margin:0 auto; padding:22px 20px; }
+
+/* CARDS */
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+.card {
+  background:white; border-radius:14px; padding:18px 20px;
+  box-shadow:0 2px 10px rgba(0,0,0,.07); position:relative; overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+}
+.card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.12); }
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; }
+.c-green::before { background:linear-gradient(90deg,#10b981,#34d399); }
+.c-yellow::before { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+.c-red::before { background:linear-gradient(90deg,#ef4444,#f87171); }
+.c-purple::before { background:linear-gradient(90deg,#8b5cf6,#a78bfa); }
+.card-ico { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+.c-green .card-ico { background:#d1fae5; }
+.c-yellow .card-ico { background:#fef3c7; }
+.c-red .card-ico { background:#fee2e2; }
+.c-purple .card-ico { background:#ede9fe; }
+.card-val { font-size:34px; font-weight:800; line-height:1; }
+.c-green .card-val { color:#10b981; }
+.c-yellow .card-val { color:#f59e0b; }
+.c-red .card-val { color:#ef4444; }
+.c-purple .card-val { color:#8b5cf6; }
+.card-lbl { font-size:13px; color:#6b7280; margin-top:5px; font-weight:500; }
+.card-sub { font-size:11px; color:#9ca3af; margin-top:3px; }
+
+/* CHARTS */
+.charts-top { display:grid; grid-template-columns:320px 1fr; gap:14px; margin-bottom:14px; }
+.charts-bot { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; }
+.chart-card { background:white; border-radius:14px; padding:18px 20px; box-shadow:0 2px 10px rgba(0,0,0,.07); }
+.chart-title { font-size:14px; font-weight:700; color:#1a1a2e; }
+.chart-sub { font-size:11px; color:#9ca3af; margin-bottom:14px; margin-top:2px; }
+.ch { position:relative; }
+.ch-donut { height:240px; display:flex; align-items:center; justify-content:center; }
+.ch-bar { height:250px; }
+.ch-hbar { height:310px; }
+.ch-rt { height:250px; }
+
+/* SECTION & FILTERS */
+.sec-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+.sec-title { font-size:15px; font-weight:700; color:#1a1a2e; }
+.filters { display:flex; gap:8px; flex-wrap:wrap; }
+select,input { padding:8px 11px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; color:#374151; background:white; outline:none; transition:border-color .2s; }
+select:focus,input:focus { border-color:#0f3460; }
+input[type=text] { min-width:190px; }
+
+/* TABLE */
+.table-wrap { background:white; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.07); overflow:hidden; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead { background:#1a1a2e; color:white; }
+th { padding:11px 13px; text-align:left; font-weight:600; white-space:nowrap; }
+tbody tr { border-bottom:1px solid #f3f4f6; transition:background .12s; }
+tbody tr:hover { background:#f9fafb; }
+td { padding:10px 13px; color:#374151; }
+td.bold { font-weight:600; color:#1a1a2e; }
+
+.badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; }
+.bs { background:#d1fae5; color:#065f46; }
+.bc { background:#fef3c7; color:#92400e; }
+.bb { background:#fee2e2; color:#991b1b; }
+.bn { background:#ede9fe; color:#5b21b6; }
+
+.pagination { display:flex; gap:5px; justify-content:center; padding:13px; flex-wrap:wrap; }
+.page-btn { padding:5px 11px; border:1.5px solid #e5e7eb; border-radius:7px; background:white; cursor:pointer; font-size:12px; transition:all .15s; }
+.page-btn:hover,.page-btn.active { background:#0f3460; color:white; border-color:#0f3460; font-weight:700; }
+.page-info { font-size:11px; color:#9ca3af; text-align:center; padding:0 0 8px; }
+
+.empty { text-align:center; padding:40px; color:#9ca3af; font-size:14px; }
+
+@media(max-width:900px){
+  .cards{grid-template-columns:repeat(2,1fr);}
+  .charts-top,.charts-bot{grid-template-columns:1fr;}
+}
+@media(max-width:500px){
+  .cards{grid-template-columns:1fr;}
+  header{flex-direction:column;gap:10px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Web Monitoring <span>SE 2026</span></h1>
+    <div class="header-sub">Kabupaten Maluku Barat Daya — Progres Pencacahan Lapangan</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="time" id="live-time">--:--:--</div>
+      <div class="date" id="live-date">---</div>
+    </div>
+    <button class="btn-refresh" onclick="refreshAll(this)">
+      <span class="ico">🔄</span> Perbarui Data
+    </button>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="cards">
+    <div class="card c-green">
+      <div class="card-ico">✅</div>
+      <div class="card-val" id="cnt-s">—</div>
+      <div class="card-lbl">Sudah Submit</div>
+      <div class="card-sub" id="pct-s"></div>
+    </div>
+    <div class="card c-yellow">
+      <div class="card-ico">📝</div>
+      <div class="card-val" id="cnt-c">—</div>
+      <div class="card-lbl">Sudah Cacah, Belum Submit</div>
+      <div class="card-sub" id="pct-c"></div>
+    </div>
+    <div class="card c-red">
+      <div class="card-ico">⏰</div>
+      <div class="card-val" id="cnt-b">—</div>
+      <div class="card-lbl">Belum Cacah</div>
+      <div class="card-sub" id="pct-b"></div>
+    </div>
+    <div class="card c-purple">
+      <div class="card-ico">🌿</div>
+      <div class="card-val" id="cnt-n">—</div>
+      <div class="card-lbl">Tidak Ada Rumah Tangga</div>
+      <div class="card-sub">Area hutan / non-pemukiman</div>
+    </div>
+  </div>
+
+  <div class="charts-top">
+    <div class="chart-card">
+      <div class="chart-title">🎯 Status Keseluruhan</div>
+      <div class="chart-sub">Distribusi semua Blok Sensus</div>
+      <div class="ch ch-donut"><canvas id="cDonut"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🏘️ Progress per Kecamatan</div>
+      <div class="chart-sub">Jumlah BS per status di setiap kecamatan</div>
+      <div class="ch ch-bar"><canvas id="cBar"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-bot">
+    <div class="chart-card">
+      <div class="chart-title">📈 % Selesai per Kecamatan</div>
+      <div class="chart-sub">Persentase BS yang sudah submit (merah &lt;40%, kuning 40-69%, hijau ≥70%)</div>
+      <div class="ch ch-hbar"><canvas id="cHbar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📊 Rumah Tangga per Status</div>
+      <div class="chart-sub">Total RT per kecamatan berdasarkan status BS</div>
+      <div class="ch ch-rt"><canvas id="cRt"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec-head">
+    <div class="sec-title">📋 Detail Data Lapangan</div>
+    <div class="filters">
+      <select id="fKec" onchange="onKecChange()"><option value="">Semua Kecamatan</option></select>
+      <select id="fDesa" onchange="loadTable()"><option value="">Semua Desa</option></select>
+      <select id="fStatus" onchange="loadTable()">
+        <option value="">Semua Status</option>
+        <option>Sudah Submit</option>
+        <option>Sudah Cacah Belum Submit</option>
+        <option>Belum Cacah</option>
+        <option>Tidak Ada RT</option>
+      </select>
+      <input id="fQ" type="text" placeholder="🔍 Cari PCL / desa..." oninput="debounce(loadTable,400)()">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Kecamatan</th><th>Desa</th><th>Sub Sektor</th>
+          <th>Jml RT</th><th>PCL</th><th>PML</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tBody"></tbody>
+    </table>
+    <div class="page-info" id="pageInfo"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+</div>
+
+<script>
+const COLORS = {
+  'Sudah Submit':'#10b981','Sudah Cacah Belum Submit':'#f59e0b',
+  'Belum Cacah':'#ef4444','Tidak Ada RT':'#8b5cf6'
+};
+const BADGE = {
+  'Sudah Submit':'bs','Sudah Cacah Belum Submit':'bc','Belum Cacah':'bb','Tidak Ada RT':'bn'
+};
+
+let charts = {};
+let allData = [];
+let currentPage = 1;
+const PAGE = 20;
+
+// CLOCK
+function tick(){
+  const now = new Date();
+  document.getElementById('live-time').textContent = now.toLocaleTimeString('id-ID');
+  document.getElementById('live-date').textContent = now.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+tick(); setInterval(tick,1000);
+
+// DEBOUNCE
+function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+
+async function fetchJSON(url){ const r=await fetch(url); return r.json(); }
+
+async function loadSummary(){
+  const s = await fetchJSON('/api/summary');
+  const active = (s['Sudah Submit']||0)+(s['Sudah Cacah Belum Submit']||0)+(s['Belum Cacah']||0);
+  document.getElementById('cnt-s').textContent = s['Sudah Submit']||0;
+  document.getElementById('cnt-c').textContent = s['Sudah Cacah Belum Submit']||0;
+  document.getElementById('cnt-b').textContent = s['Belum Cacah']||0;
+  document.getElementById('cnt-n').textContent = s['Tidak Ada RT']||0;
+  const pct = v => active>0?Math.round((v||0)/active*100)+'% dari BS aktif':'';
+  document.getElementById('pct-s').textContent = pct(s['Sudah Submit']);
+  document.getElementById('pct-c').textContent = pct(s['Sudah Cacah Belum Submit']);
+  document.getElementById('pct-b').textContent = pct(s['Belum Cacah']);
+  return s;
+}
+
+async function loadCharts(){
+  const [summary, chartData] = await Promise.all([
+    fetchJSON('/api/summary'),
+    fetchJSON('/api/chart-data')
+  ]);
+
+  // DONUT
+  destroyChart('cDonut');
+  const dCtx = document.getElementById('cDonut').getContext('2d');
+  charts['cDonut'] = new Chart(dCtx, {
+    type:'doughnut',
+    data:{
+      labels:Object.keys(summary),
+      datasets:[{
+        data:Object.values(summary),
+        backgroundColor:Object.keys(summary).map(k=>COLORS[k]),
+        borderWidth:3,borderColor:'#fff',hoverOffset:8
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{
+        legend:{position:'bottom',labels:{padding:12,font:{size:11},boxWidth:12}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed} BS`}}
+      }
+    }
+  });
+
+  const kecList = Object.keys(chartData).sort();
+  const statList = ['Sudah Submit','Sudah Cacah Belum Submit','Belum Cacah','Tidak Ada RT'];
+
+  // STACKED BAR
+  destroyChart('cBar');
+  const bCtx = document.getElementById('cBar').getContext('2d');
+  charts['cBar'] = new Chart(bCtx, {
+    type:'bar',
+    data:{
+      labels:kecList.map(toTitleCase),
+      datasets:statList.map(s=>({
+        label:s,
+        data:kecList.map(k=>(chartData[k][s]||{}).count||0),
+        backgroundColor:COLORS[s],borderRadius:3,borderSkipped:false
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:10},boxWidth:10}},tooltip:{mode:'index',intersect:false}},
+      scales:{
+        x:{stacked:true,ticks:{font:{size:9},maxRotation:45},grid:{display:false}},
+        y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10}}}
+      }
+    }
+  });
+
+  // HORIZONTAL BAR %
+  const pctArr = kecList.map(k=>{
+    const d=chartData[k]||{};
+    const tot=(d['Sudah Submit']?.count||0)+(d['Sudah Cacah Belum Submit']?.count||0)+(d['Belum Cacah']?.count||0);
+    return tot>0?Math.round((d['Sudah Submit']?.count||0)/tot*100):0;
+  });
+  const sortedIdx=[...Array(kecList.length).keys()].sort((a,b)=>pctArr[b]-pctArr[a]);
+
+  destroyChart('cHbar');
+  const hCtx = document.getElementById('cHbar').getContext('2d');
+  charts['cHbar'] = new Chart(hCtx, {
+    type:'bar',
+    data:{
+      labels:sortedIdx.map(i=>toTitleCase(kecList[i])),
+      datasets:[{
+        label:'% Submit',
+        data:sortedIdx.map(i=>pctArr[i]),
+        backgroundColor:sortedIdx.map(i=>pctArr[i]>=70?'#10b981':pctArr[i]>=40?'#f59e0b':'#ef4444'),
+        borderRadius:5
+      }]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.x}% sudah submit`}}},
+      scales:{
+        x:{max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f3f4f6'}},
+        y:{ticks:{font:{size:9}},grid:{display:false}}
+      }
+    }
+  });
+
+  // RT CHART
+  const rtStat = ['Sudah Submit','Sudah Cacah Belum Submit','Belum Cacah'];
+  destroyChart('cRt');
+  const rtCtx = document.getElementById('cRt').getContext('2d');
+  charts['cRt'] = new Chart(rtCtx, {
+    type:'bar',
+    data:{
+      labels:kecList.map(toTitleCase),
+      datasets:rtStat.map(s=>({
+        label:s,
+        data:kecList.map(k=>(chartData[k][s]||{}).rt||0),
+        backgroundColor:COLORS[s],borderRadius:3
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:10},boxWidth:10}},
+        tooltip:{mode:'index',intersect:false,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toLocaleString('id')} RT`}}
+      },
+      scales:{
+        x:{stacked:true,ticks:{font:{size:9},maxRotation:45},grid:{display:false}},
+        y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{callback:v=>v>=1000?Math.round(v/1000)+'K':v,font:{size:10}}}
+      }
+    }
+  });
+}
+
+function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+function toTitleCase(s){ return s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()); }
+
+async function loadKecList(){
+  const kecs = await fetchJSON('/api/kecamatan');
+  const sel = document.getElementById('fKec');
+  sel.innerHTML = '<option value="">Semua Kecamatan</option>';
+  kecs.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; sel.appendChild(o); });
+}
+
+async function onKecChange(){
+  const kec = document.getElementById('fKec').value;
+  const desas = await fetchJSON('/api/desa?kec='+encodeURIComponent(kec));
+  const sel = document.getElementById('fDesa');
+  sel.innerHTML = '<option value="">Semua Desa</option>';
+  desas.forEach(d=>{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+  loadTable();
+}
+
+async function loadTable(){
+  currentPage = 1;
+  const kec = document.getElementById('fKec').value;
+  const desa = document.getElementById('fDesa').value;
+  const status = document.getElementById('fStatus').value;
+  const q = document.getElementById('fQ').value;
+  const params = new URLSearchParams({kec,desa,status,q});
+  allData = await fetchJSON('/api/data?'+params);
+  renderTable();
+}
+
+function renderTable(){
+  const start=(currentPage-1)*PAGE;
+  const page=allData.slice(start,start+PAGE);
+  document.getElementById('tBody').innerHTML = page.length ? page.map((d,i)=>`
+    <tr>
+      <td style="color:#9ca3af">${start+i+1}</td>
+      <td class="bold">${d.kecamatan}</td>
+      <td>${d.desa}</td>
+      <td style="font-size:12px;color:#6b7280">${d.nmsls}</td>
+      <td style="text-align:right;font-weight:600">${d.rt.toLocaleString('id')}</td>
+      <td style="font-size:12px">${d.pcl}</td>
+      <td style="font-size:12px;color:#6b7280">${d.pml}</td>
+      <td><span class="badge ${BADGE[d.status]||'bn'}">${d.status}</span></td>
+    </tr>
+  `).join('') : '<tr><td colspan="8" class="empty">Tidak ada data ditemukan</td></tr>';
+
+  const total=allData.length, totalPages=Math.ceil(total/PAGE);
+  document.getElementById('pageInfo').textContent =
+    total ? `Menampilkan ${Math.min(start+1,total)}–${Math.min(start+PAGE,total)} dari ${total} data` : '';
+
+  const pag=document.getElementById('pagination'); pag.innerHTML='';
+  if(totalPages<=1)return;
+  const addBtn=(lbl,pg,active=false,disabled=false)=>{
+    const b=document.createElement('button');
+    b.className='page-btn'+(active?' active':''); b.textContent=lbl; b.disabled=disabled;
+    b.onclick=()=>{ currentPage=pg; renderTable(); }; pag.appendChild(b);
+  };
+  addBtn('‹',currentPage-1,false,currentPage===1);
+  const range=[];
+  for(let p=1;p<=totalPages;p++){
+    if(p===1||p===totalPages||Math.abs(p-currentPage)<=2)range.push(p);
+    else if(range[range.length-1]!=='...')range.push('...');
+  }
+  range.forEach(p=>{ if(p==='...'){const s=document.createElement('span');s.textContent='…';s.style.padding='5px 3px';pag.appendChild(s);}else addBtn(p,p,p===currentPage); });
+  addBtn('›',currentPage+1,false,currentPage===totalPages);
+}
+
+async function refreshAll(btn){
+  if(btn){ btn.classList.add('loading'); btn.disabled=true; }
+  await Promise.all([loadSummary(), loadCharts(), loadTable()]);
+  if(btn){ btn.classList.remove('loading'); btn.disabled=false; }
+}
+
+// INIT
+(async()=>{
+  await loadKecList();
+  await refreshAll();
+})();
+
+// Auto-refresh every 5 minutes
+setInterval(()=>refreshAll(), 5*60*1000);
+</script>
+</body>
+</html>
